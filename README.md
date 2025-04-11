@@ -7,9 +7,16 @@
 This a work-in-progress messaging app that uses the CLI(Command-Line-Interface)
 
 ## Commands
-|Command | Description | Usage |
-|--------|-------------|--------|
-| `/send` | Send a message | `/send <message> <recipient>`|
+|Command | Description |
+|--------|-------------|
+|`/help`| List all commands|
+|`/send`| Send a message|
+|`/inbox`| View your inbox|
+|`/changelog`| View the changelog Of this app|
+|`/logout`| Logout of a account|
+|`/exit`| Exit the app|
+
+
 
 
 ## Fueture Plans
