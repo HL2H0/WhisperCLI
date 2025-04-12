@@ -19,6 +19,8 @@ This a work-in-progress messaging app that uses the CLI(Command-Line-Interface)
 |`/help`| List all commands|
 |`/send`| Send a message|
 |`/inbox`| View your inbox|
+|`/clear inbox`| Clear your inbox|
+|`/clear console`| Clear the console|
 |`/changelog`| View the changelog Of this app|
 |`/logout`| Logout of a account|
 |`/exit`| Exit the app|
