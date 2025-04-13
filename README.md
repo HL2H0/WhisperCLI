@@ -25,11 +25,17 @@ This a work-in-progress messaging app that uses the CLI(Command-Line-Interface)
 |`/logout`| Logout of a account|
 |`/exit`| Exit the app|
 
+## What's In The Works ?
+
+### In-Progress
+- Networking
 
 
+### Planning 
+- Port Networking to WhisperCLI
+- Discussion Mode(Send and receive messages without Accessing the inbox))
 
-## Fueture Plans
-- Add more commands
 
-- Use networking to send messages
-
+### Future
+- GUI Wrapper
+- SQL Database
