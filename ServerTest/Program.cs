@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 
@@ -6,18 +9,32 @@ namespace ServerTest
 {
     internal class Program
     {
+        private static TcpListener listener;
+
         static void Main(string[] args)
         {
-            NetworkStream stream;
-            byte[] buffer;
+            
 
             TcpListener listener = new TcpListener(IPAddress.Any, 8080);
             listener.Start();
             Console.WriteLine("Server started. Waiting for a connection...");
 
-            TcpClient client = listener.AcceptTcpClient();
-            Console.WriteLine("Client connected.");
+            while (true)
+            {
+                TcpClient client = listener.AcceptTcpClient();
+                Console.WriteLine("Client connected.");
+                Task.Run(() => HandleClient(client)); // Handle client in a separate thread
+            }
+            
 
+
+
+        }
+
+        public static void HandleClient(TcpClient client)
+        {
+            NetworkStream stream;
+            byte[] buffer;
             while (true)
             {
                 stream = client.GetStream();
@@ -31,11 +48,10 @@ namespace ServerTest
                 byte[] response = Encoding.UTF8.GetBytes("Echo: " + message);
                 stream.Write(response, 0, response.Length);
             }
-           
+
             stream.Close();
             client.Close();
             listener.Stop();
-
         }
     }
 }
