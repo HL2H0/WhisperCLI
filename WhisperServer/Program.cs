@@ -14,7 +14,7 @@ namespace WhisperServer
 
         static void Main(string[] args)
         {
-            LoadUsers();
+            LoadUsers(  );
             Processor = new CommandProcessor(Users);
 
             TcpListener server = new TcpListener(System.Net.IPAddress.Any, 8080);

@@ -4,10 +4,18 @@ namespace WhisperCLI
 {
     internal class Program
     {
+        private static string _serverIP;
+        private static int _serverPort;
+
         static void Main(string[] args)
         {
+            LoadConfig();
             Client client = new Client();
+<<<<<<< HEAD
             client.Connect("127.0.0.1", 8080);
+=======
+            client.Connect(_serverIP, _serverPort);
+>>>>>>> 08c1e34 (Added Config file read for settings)
             User _currentUser;
 
             WriteHeader();
@@ -105,6 +113,26 @@ namespace WhisperCLI
             Console.WriteLine("| |/ |/ / / / / (__  ) /_/ /  __/ /     / /___/ /____/ /   ");
             Console.WriteLine("|__/|__/_/ /_/_/____/ .___/\\___/_/      \\____/_____/___/   ");
             Console.WriteLine("                     /_/                                   \n\n");
+        }
+
+        static void LoadConfig()
+        {
+            if (!File.Exists("config.json"))
+            {
+                File.Create("config.json").Close();
+            }
+            if(File.ReadAllText("config.json") == string.Empty)
+            {
+                Console.WriteLine("[ERROR] config.json is empty. Please fill it with the server IP and port.");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
+
+            var json = File.ReadAllText("config.json");
+            var config = JsonSerializer.Deserialize<object>(json);
+            var configObj = (JsonElement)config;
+            _serverIP = configObj.GetProperty("serverIP").GetString();
+            _serverPort = configObj.GetProperty("serverPort").GetInt32();
         }
     }
 }
