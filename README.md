@@ -29,10 +29,9 @@ This a work-in-progress messaging app that uses the CLI(Command-Line-Interface)
 
 ### In-Progress
 - Networking
-
+- Port Networking to WhisperCLI
 
 ### Planning 
-- Port Networking to WhisperCLI
 - Discussion Mode(Send and receive messages without Accessing the inbox))
 
 
