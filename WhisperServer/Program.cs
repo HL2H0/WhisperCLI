@@ -14,7 +14,14 @@ namespace WhisperServer
 
         static void Main(string[] args)
         {
-            LoadUsers(  );
+            Console.WriteLine(" _       ____    _                      ________    ____   _____                          ");
+            Console.WriteLine("| |     / / /_  (_)________  ___  _____/ ____/ /   /  _/  / ___/___  ______   _____  _____");
+            Console.WriteLine("| | /| / / __ \\/ / ___/ __ \\/ _ \\/ ___/ /   / /    / /    \\__ \\/ _ \\/ ___/ | / / _ \\/ ___/");
+            Console.WriteLine("| |/ |/ / / / / (__  ) /_/ /  __/ /  / /___/ /____/ /    ___/ /  __/ /   | |/ /  __/ /    ");
+            Console.WriteLine("|__/|__/_/ /_/_/____/ .___/\\___/_/   \\____/_____/___/   /____/\\___/_/    |___/\\___/_/     ");
+            Console.WriteLine("                   /_/                                                                    ");
+
+            LoadUsers();
             Processor = new CommandProcessor(Users);
 
             TcpListener server = new TcpListener(System.Net.IPAddress.Any, 8080);

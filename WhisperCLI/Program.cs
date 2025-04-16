@@ -11,11 +11,7 @@ namespace WhisperCLI
         {
             LoadConfig();
             Client client = new Client();
-<<<<<<< HEAD
-            client.Connect("127.0.0.1", 8080);
-=======
-            client.Connect(_serverIP, _serverPort);
->>>>>>> 08c1e34 (Added Config file read for settings)
+            client.Connect("", 8080);
             User _currentUser;
 
             WriteHeader();

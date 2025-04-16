@@ -74,7 +74,7 @@ namespace WhisperServer.Services
                 Timestamp = DateTime.UtcNow
             });
 
-            return JsonSerializer.Serialize(new { message = "sent" });
+            return JsonSerializer.Serialize(new { status = "success", message = "Message sent successfully!" });
         }
 
         private string HandleInbox(Command cmd)

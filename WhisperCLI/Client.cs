@@ -31,9 +31,15 @@ namespace WhisperCLI
                 _receiveThread = new Thread(ReceiveLoop);
                 _receiveThread.Start();
             }
-            catch(Exception ex)
+            catch(SocketException ex)
             {
-                Console.WriteLine($"[ERROR] Couldn't connect : {ex.Message}");
+                Console.WriteLine($"[ERROR] Couldn't connect to server");
+                _client?.Close();
+                _stream?.Close();
+                _client = null;
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                Environment.Exit(0);
             }
         }
 
@@ -57,7 +63,7 @@ namespace WhisperCLI
 
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesCount);
                     ReceivedMessage = message;
-                    Console.WriteLine($"[SERVER] {message}");
+                    //Console.WriteLine($"[SERVER] {message}");
                 }
                 catch (Exception ex)
                 {
