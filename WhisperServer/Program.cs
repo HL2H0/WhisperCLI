@@ -10,6 +10,7 @@ namespace WhisperServer
     internal class Program
     {
         static Dictionary<string, User> Users = new();
+        static Dictionary<string, User> OnlineUsers = new();
         static CommandProcessor Processor;
 
         static void Main(string[] args)
@@ -37,6 +38,7 @@ namespace WhisperServer
                 Console.WriteLine($"[CLIENT] Client connected from : {remoteIpEndPoint}");
                 Thread clientThread = new (() => HandleClient(client));
                 clientThread.Start();
+
             }
         }
 
