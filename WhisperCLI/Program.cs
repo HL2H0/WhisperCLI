@@ -8,8 +8,21 @@ namespace WhisperCLI
         static void Main(string[] args)
         {
             Client client = new Client();
-            client.Connect("", 8080);
             User _currentUser = null;
+            if (args.Count() > 0)
+            {
+                if (args[0] == "local")
+                {
+                    client.Connect("127.0.0.1", 8080);
+                }
+            }
+            else
+            {
+                client.Connect("", 8080);
+            }
+            
+            
+            
 
             WriteHeader();
 
