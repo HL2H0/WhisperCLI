@@ -13,7 +13,7 @@ namespace WhisperCLI
             {
                 if (args[0] == "local")
                 {
-                    client.Connect("127.0.0.1", 8080);
+                    client.Connect("", 8080);
                 }
             }
             else
@@ -106,6 +106,49 @@ namespace WhisperCLI
                     default:
                         Console.WriteLine("Invalid option. Please try again.");
                         break;
+                }
+            }
+        }
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("No response from server.");
+                        }
+                        client.ResetReceivedMessage();
+                        break;
+                }
+                if(command.StartsWith("send "))
+                {
+                    var parts = command.Split(' ', 3);
+                    if (parts.Length < 3)
+                    {
+                        Console.WriteLine("Usage: send <username> <message>");
+                        continue;
+                    }
+                    string recipient = parts[1];
+                    string message = parts[2];
+                    client.Send(JsonSerializer.Serialize(new Command { Type = "send_message", From = _currentUser.Username, To = recipient, Content = message }));
+                    Thread.Sleep(1000); // Wait for server response
+                    if (client.ReceivedMessage != string.Empty)
+                    {
+                        var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
+                        var responseObj = (JsonElement)response;
+                        var responseType = responseObj.GetProperty("status").GetString();
+                        var responseMessage = responseObj.GetProperty("message").GetString();
+                        if (responseType == "success")
+                        {
+                            Console.WriteLine(responseMessage);
+                        }
+                        else
+                        {
+                            Console.WriteLine(responseMessage);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No response from server.");
+                    }
                 }
             }
         }
