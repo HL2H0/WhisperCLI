@@ -107,8 +107,70 @@ namespace WhisperCLI
                         Console.WriteLine("Invalid option. Please try again.");
                         break;
                 }
+                break;
             }
-        }
+
+            WriteHeader();
+            Console.WriteLine($"Welcome, {_currentUser.Username}!");
+            while (true)
+            {
+                Console.Write("> ");
+                string command = Console.ReadLine();
+                switch (command)
+                {
+                    //default:
+                    //    Console.WriteLine("Unknown command. Please try again.");
+                    //    Console.WriteLine("Use 'help' to see available commands.");
+                    //    break;
+                    case "help":
+                        Console.WriteLine("Available commands:");
+                        Console.WriteLine("send <username> <message> - Send a message to a user.");
+                        Console.WriteLine("inbox - View your inbox.");
+                        Console.WriteLine("logout - Logout from the current session.");
+                        break;
+                    case "logout":
+                        Console.WriteLine("Logging out...");
+                        client.Disconnect();
+                        _currentUser = null;
+                        WriteHeader();
+                        break;
+                    case "inbox":
+                        Console.WriteLine("Your inbox:");
+                        client.Send(JsonSerializer.Serialize(new Command { Type = "get_inbox", From = _currentUser.Username}));
+                        Thread.Sleep(1000); // Wait for server response
+                        if (client.ReceivedMessage != string.Empty)
+                        {
+                            var response = JsonSerializer.Deserialize<List<Message>>(client.ReceivedMessage);
+                            if (response != null && response.Count > 0)
+                            {
+                                var todayMessages = response.Where(m => m.Timestamp.Day == DateTime.Now.Day);
+                                var yesterdayMessages = response.Where(m => m.Timestamp.Day == DateTime.Now.Day -1);
+                                var olderMessages = response.Where(m => m.Timestamp.Day < DateTime.Now.Day -1);
+                                if (todayMessages.Count() > 0)
+                                {
+                                    Console.WriteLine("=== Today ===");
+                                    foreach (var message in todayMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
+                                }
+                                if (yesterdayMessages.Count() > 0)
+                                {
+                                    Console.WriteLine("=== Yesterday ===");
+                                    foreach (var message in yesterdayMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
+                                }
+                                if (olderMessages.Count() > 0)
+                                {
+                                    Console.WriteLine("=== Older Messages ===");
+                                    foreach (var message in olderMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
+                                }
+                                Console.WriteLine("=== End of Inbox ===\n");
 
                         }
                         else
