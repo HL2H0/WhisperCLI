@@ -8,7 +8,7 @@ namespace WhisperCLI
         static void Main(string[] args)
         {
             Client client = new Client();
-            client.Connect("", 0);
+            client.Connect("", 8080);
             User _currentUser = null;
 
             WriteHeader();
