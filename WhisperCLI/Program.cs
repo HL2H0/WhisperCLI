@@ -124,8 +124,10 @@ namespace WhisperCLI
                     //    break;
                     case "help":
                         Console.WriteLine("Available commands:");
+                        Console.WriteLine("help - Show this help message.");
                         Console.WriteLine("send <username> <message> - Send a message to a user.");
                         Console.WriteLine("inbox - View your inbox.");
+                        Console.WriteLine("clear - Clear the console.");
                         Console.WriteLine("logout - Logout from the current session.");
                         break;
                     case "logout":
@@ -178,6 +180,10 @@ namespace WhisperCLI
                             Console.WriteLine("No response from server.");
                         }
                         client.ResetReceivedMessage();
+                        break;
+                    
+                    case "send":
+                        Console.WriteLine("Usage: send <username> <message>");
                         break;
                 }
                 if(command.StartsWith("send "))
