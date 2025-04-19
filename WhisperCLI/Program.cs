@@ -41,7 +41,8 @@ namespace WhisperCLI
                 Console.WriteLine("Hi, What would you like to do?");
                 Console.WriteLine("Login (1)");
                 Console.WriteLine("Register (2)");
-                Console.WriteLine("Exit (3)");
+                Console.WriteLine("Exit (3)\n");
+                Console.Write("> ");
                 switch (Console.ReadLine())
                 {
                     case "1":
@@ -142,6 +143,15 @@ namespace WhisperCLI
                 switch (command)
                 {
                     default:
+                        if (string.IsNullOrWhiteSpace(command))
+                        {
+                            Console.WriteLine("Command cannot be empty. Please try again.");
+                            break;
+                        }
+                        else if(command.StartsWith("send "))
+                        {
+                            break;
+                        }
                         Console.WriteLine("Unknown command. Please try again.");
                         Console.WriteLine("Use 'help' to see available commands.");
                         break;
@@ -213,7 +223,7 @@ namespace WhisperCLI
                         Console.WriteLine("Usage: send <username> <message>");
                         break;
                 }
-                if(command.StartsWith("send"))
+                if(command.StartsWith("send "))
                 {
                     var parts = command.Split(' ', 3);
                     if (parts.Length < 3)
@@ -223,26 +233,33 @@ namespace WhisperCLI
                     }
                     string recipient = parts[1];
                     string message = parts[2];
-                    client.Send(JsonSerializer.Serialize(new Command { Type = "send_message", From = _currentUser.Username, To = recipient, Content = message }));
-                    Thread.Sleep(1000); // Wait for server response
-                    if (client.ReceivedMessage != string.Empty)
+                    if (string.IsNullOrWhiteSpace(message) || string.IsNullOrWhiteSpace(recipient))
                     {
-                        var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
-                        var responseObj = (JsonElement)response;
-                        var responseType = responseObj.GetProperty("status").GetString();
-                        var responseMessage = responseObj.GetProperty("message").GetString();
-                        if (responseType == "success")
-                        {
-                            Console.WriteLine(responseMessage);
-                        }
-                        else
-                        {
-                            Console.WriteLine(responseMessage);
-                        }
+                        Console.WriteLine("recipient cant be Empty");
                     }
                     else
                     {
-                        Console.WriteLine("No response from server.");
+                        client.Send(JsonSerializer.Serialize(new Command { Type = "send_message", From = _currentUser.Username, To = recipient, Content = message }));
+                        Thread.Sleep(1000); // Wait for server response
+                        if (client.ReceivedMessage != string.Empty)
+                        {
+                            var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
+                            var responseObj = (JsonElement)response;
+                            var responseType = responseObj.GetProperty("status").GetString();
+                            var responseMessage = responseObj.GetProperty("message").GetString();
+                            if (responseType == "success")
+                            {
+                                Console.WriteLine(responseMessage);
+                            }
+                            else
+                            {
+                                Console.WriteLine(responseMessage);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("No response from server.");
+                        }
                     }
                 }
             }
