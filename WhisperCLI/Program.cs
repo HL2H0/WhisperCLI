@@ -8,8 +8,31 @@ namespace WhisperCLI
         static void Main(string[] args)
         {
             Client client = new Client();
-            client.Connect("whisperserver.duckdns.org", 8080);
             User _currentUser = null;
+            WriteHeader();
+            Console.WriteLine("Welcome to Whisper! Please select a server to connect to");
+            Console.WriteLine("1. Localhost(For debugging purposes only)");
+            Console.WriteLine("2. Main Server \n");
+            while (true)
+            { 
+                Console.Write("> ");
+                string serverChoice = Console.ReadLine();
+                switch (serverChoice)
+                {
+                    case "1" :
+                        Console.WriteLine("Connecting to localhost...");
+                        client.Connect("127.0.0.1", 8080);
+                        break;
+                    case "2":
+                        Console.WriteLine("Connecting to main server...");
+                        client.Connect("whisperserver.duckdns.org", 8080);
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.\n");
+                        continue;
+                }
+                break;
+            }
 
             WriteHeader();
 
