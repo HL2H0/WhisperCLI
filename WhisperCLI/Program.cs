@@ -1,23 +1,15 @@
 ﻿using System.Text.Json;
 using WhisperCLI.Models;
-
 namespace WhisperCLI
 {
     internal class Program
     {
+
         static void Main(string[] args)
         {
             Client client = new Client();
+            client.Connect("whisperserver.duckdns.org", 8080);
             User _currentUser = null;
-
-            if (args.Length > 0 && args[0] == "local")
-            {
-                client.Connect("127.0.0.1", 8080);
-            }
-            else
-            {
-                client.Connect("whisperserver.duckdns.org", 8080);
-            }
 
             WriteHeader();
 
@@ -27,69 +19,81 @@ namespace WhisperCLI
                 Console.WriteLine("Login (1)");
                 Console.WriteLine("Register (2)");
                 Console.WriteLine("Exit (3)");
-                string choice = Console.ReadLine();
-
-                switch (choice)
+                switch (Console.ReadLine())
                 {
                     case "1":
-                        Console.Write("Enter your username: ");
-                        string username = Console.ReadLine();
-                        Console.Write("Enter your password: ");
-                        string password = Console.ReadLine();
-                        client.Send(JsonSerializer.Serialize(new Command { Type = "login", Username = username, Password = password }));
-                        Thread.Sleep(1000); // Wait for server response
-
-                        if (!string.IsNullOrEmpty(client.ReceivedMessage))
+                        while (true)
                         {
-                            var response = JsonSerializer.Deserialize<JsonElement>(client.ReceivedMessage);
-                            string responseType = response.GetProperty("status").GetString();
-                            string responseMessage = response.GetProperty("message").GetString();
-
-                            if (responseType == "success")
+                            Console.Write("Enter your username:");
+                            string username = Console.ReadLine();
+                            Console.Write("Enter your password:");
+                            string password = Console.ReadLine();
+                            client.Send(JsonSerializer.Serialize(new Command { Type = "login", Username = username, Password = password }));
+                            Thread.Sleep(1000); // Wait for server response
+                            if (client.ReceivedMessage != string.Empty)
                             {
-                                Console.WriteLine("Login successful!");
-                                _currentUser = new User { Username = username, Password = password };
+                                var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
+                                var responseObj = (JsonElement)response;
+                                var responseType = responseObj.GetProperty("status").GetString();
+                                var responseMessage = responseObj.GetProperty("message").GetString();
+
+                                if (responseType == "success")
+                                {
+                                    Console.WriteLine("Login successful!");
+                                    _currentUser = new User { Username = username, Password = password };
+                                    break;
+                                }
+                                else
+                                {
+                                    Console.WriteLine(responseMessage);
+                                    Console.WriteLine("Please try again.");
+                                    client.ResetReceivedMessage();
+                                    continue;
+                                }
                             }
                             else
                             {
-                                Console.WriteLine(responseMessage);
+                                Console.WriteLine("No response from server.");
                             }
                         }
-                        else
-                        {
-                            Console.WriteLine("No response from server.");
-                        }
+                       
                         client.ResetReceivedMessage();
                         break;
-
                     case "2":
-                        Console.Write("Create Username: ");
-                        string newUsername = Console.ReadLine();
-                        Console.Write("Create Password: ");
-                        string newPassword = Console.ReadLine();
-                        client.Send(JsonSerializer.Serialize(new Command { Type = "register", Username = newUsername, Password = newPassword }));
-                        Thread.Sleep(1000); // Wait for server response
-
-                        if (!string.IsNullOrEmpty(client.ReceivedMessage))
+                        while (true)
                         {
-                            var response = JsonSerializer.Deserialize<JsonElement>(client.ReceivedMessage);
-                            string responseType = response.GetProperty("status").GetString();
-                            string responseMessage = response.GetProperty("message").GetString();
-
-                            if (responseType == "success")
+                            Console.Write("Create Username: ");
+                            string newUsername = Console.ReadLine();
+                            Console.Write("Create Password: ");
+                            string newPassword = Console.ReadLine();
+                            client.Send(JsonSerializer.Serialize(new Command { Type = "register", Username = newUsername, Password = newPassword }));
+                            Thread.Sleep(1000); // Wait for server response
+                            if (client.ReceivedMessage != string.Empty)
                             {
-                                Console.WriteLine("Registration successful!");
-                                _currentUser = new User { Username = newUsername, Password = newPassword };
+                                var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
+                                var responseObj = (JsonElement)response;
+                                var responseType = responseObj.GetProperty("status").GetString();
+                                var responseMessage = responseObj.GetProperty("message").GetString();
+
+                                if (responseType == "success")
+                                {
+                                    Console.WriteLine("Registration successful!");
+                                    _currentUser = new User { Username = newUsername, Password = newPassword };
+                                    break;
+                                }
+                                else if (responseType == "fail")
+                                {
+                                    Console.WriteLine(responseMessage);
+                                    client.ResetReceivedMessage();
+                                    continue;
+                                }
                             }
                             else
                             {
-                                Console.WriteLine(responseMessage);
+                                Console.WriteLine("No response from server.");
                             }
                         }
-                        else
-                        {
-                            Console.WriteLine("No response from server.");
-                        }
+
                         client.ResetReceivedMessage();
                         break;
 
@@ -99,95 +103,94 @@ namespace WhisperCLI
                         client.Disconnect();
                         Environment.Exit(0);
                         return;
-
                     default:
                         Console.WriteLine("Invalid option. Please try again.");
                         break;
                 }
-
-                if (_currentUser != null)
-                {
-                    break;
-                }
+                break;
             }
 
             WriteHeader();
             Console.WriteLine($"Welcome, {_currentUser.Username}!");
-
             while (true)
             {
                 Console.Write("> ");
                 string command = Console.ReadLine();
-
-                if (command == "help")
+                switch (command)
                 {
-                    Console.WriteLine("Available commands:");
-                    Console.WriteLine("send <username> <message> - Send a message to a user.");
-                    Console.WriteLine("inbox - View your inbox.");
-                    Console.WriteLine("logout - Logout from the current session.");
-                }
-                else if (command == "logout")
-                {
-                    Console.WriteLine("Logging out...");
-                    client.Disconnect();
-                    _currentUser = null;
-                    WriteHeader();
-                    break;
-                }
-                else if (command == "inbox")
-                {
-                    Console.WriteLine("Your inbox:");
-                    client.Send(JsonSerializer.Serialize(new Command { Type = "get_inbox", From = _currentUser.Username }));
-                    Thread.Sleep(1000); // Wait for server response
-
-                    if (!string.IsNullOrEmpty(client.ReceivedMessage))
-                    {
-                        var response = JsonSerializer.Deserialize<List<Message>>(client.ReceivedMessage);
-                        if (response != null && response.Count > 0)
+                    default:
+                        Console.WriteLine("Unknown command. Please try again.");
+                        Console.WriteLine("Use 'help' to see available commands.");
+                        break;
+                    case "help":
+                        Console.WriteLine("Available commands:");
+                        Console.WriteLine("send <username> <message> - Send a message to a user.");
+                        Console.WriteLine("inbox - View your inbox.");
+                        Console.WriteLine("logout - Logout from the current session.");
+                        break;
+                    case "logout":
+                        Console.WriteLine("Logging out...");
+                        client.Disconnect();
+                        _currentUser = null;
+                        WriteHeader();
+                        break;
+                    case "inbox":
+                        Console.WriteLine("Your inbox:");
+                        client.Send(JsonSerializer.Serialize(new Command { Type = "get_inbox", From = _currentUser.Username}));
+                        Thread.Sleep(1000); // Wait for server response
+                        if (client.ReceivedMessage != string.Empty)
                         {
-                            var todayMessages = response.Where(m => m.Timestamp.Date == DateTime.Now.Date);
-                            var yesterdayMessages = response.Where(m => m.Timestamp.Date == DateTime.Now.AddDays(-1).Date);
-                            var olderMessages = response.Where(m => m.Timestamp.Date < DateTime.Now.AddDays(-1).Date);
-
-                            if (todayMessages.Any())
+                            var response = JsonSerializer.Deserialize<List<Message>>(client.ReceivedMessage);
+                            if (response != null && response.Count > 0)
                             {
-                                Console.WriteLine("=== Today ===");
-                                foreach (var message in todayMessages)
+                                var todayMessages = response.Where(m => m.Timestamp.Day == DateTime.Now.Day);
+                                var yesterdayMessages = response.Where(m => m.Timestamp.Day == DateTime.Now.Day -1);
+                                var olderMessages = response.Where(m => m.Timestamp.Day < DateTime.Now.Day -1);
+                                if (todayMessages.Count() > 0)
                                 {
-                                    Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    Console.WriteLine("=== Today ===");
+                                    foreach (var message in todayMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
                                 }
+                                if (yesterdayMessages.Count() > 0)
+                                {
+                                    Console.WriteLine("=== Yesterday ===");
+                                    foreach (var message in yesterdayMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
+                                }
+                                if (olderMessages.Count() > 0)
+                                {
+                                    Console.WriteLine("=== Older Messages ===");
+                                    foreach (var message in olderMessages)
+                                    {
+                                        Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
+                                    }
+                                }
+                                Console.WriteLine("=== End of Inbox ===\n");
+
+                            }
+                            else
+                            {
+                                Console.WriteLine("Sorry, your inbox is empty ]:");
                             }
 
-                            if (yesterdayMessages.Any())
-                            {
-                                Console.WriteLine("=== Yesterday ===");
-                                foreach (var message in yesterdayMessages)
-                                {
-                                    Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
-                                }
-                            }
-
-                            if (olderMessages.Any())
-                            {
-                                Console.WriteLine("=== Older Messages ===");
-                                foreach (var message in olderMessages)
-                                {
-                                    Console.WriteLine($"[{message.Timestamp.ToShortTimeString()}] {message.From} | {message.Content}");
-                                }
-                            }
                         }
                         else
                         {
-                            Console.WriteLine("No messages in your inbox.");
+                            Console.WriteLine("No response from server.");
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No response from server.");
-                    }
-                    client.ResetReceivedMessage();
+                        client.ResetReceivedMessage();
+                        break;
+                    
+                    case "send":
+                        Console.WriteLine("Usage: send <username> <message>");
+                        break;
                 }
-                else if (command.StartsWith("send "))
+                if(command.StartsWith("send"))
                 {
                     var parts = command.Split(' ', 3);
                     if (parts.Length < 3)
@@ -195,29 +198,29 @@ namespace WhisperCLI
                         Console.WriteLine("Usage: send <username> <message>");
                         continue;
                     }
-
                     string recipient = parts[1];
                     string message = parts[2];
                     client.Send(JsonSerializer.Serialize(new Command { Type = "send_message", From = _currentUser.Username, To = recipient, Content = message }));
                     Thread.Sleep(1000); // Wait for server response
-
-                    if (!string.IsNullOrEmpty(client.ReceivedMessage))
+                    if (client.ReceivedMessage != string.Empty)
                     {
-                        var response = JsonSerializer.Deserialize<JsonElement>(client.ReceivedMessage);
-                        string responseType = response.GetProperty("status").GetString();
-                        string responseMessage = response.GetProperty("message").GetString();
-
-                        Console.WriteLine(responseMessage);
+                        var response = JsonSerializer.Deserialize<object>(client.ReceivedMessage);
+                        var responseObj = (JsonElement)response;
+                        var responseType = responseObj.GetProperty("status").GetString();
+                        var responseMessage = responseObj.GetProperty("message").GetString();
+                        if (responseType == "success")
+                        {
+                            Console.WriteLine(responseMessage);
+                        }
+                        else
+                        {
+                            Console.WriteLine(responseMessage);
+                        }
                     }
                     else
                     {
                         Console.WriteLine("No response from server.");
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Unknown command. Please try again.");
-                    Console.WriteLine("Use 'help' to see available commands.");
                 }
             }
         }
@@ -225,12 +228,12 @@ namespace WhisperCLI
         static void WriteHeader()
         {
             Console.Clear();
-            Console.WriteLine(" _       ____    _                         ________    ____");
-            Console.WriteLine("| |     / / /_  (_)________  ___  _____   / ____/ /   /  _/");
-            Console.WriteLine("| | /| / / __ \\/ / ___/ __ \\/ _ \\/ ___/  / /   / /    / /  ");
-            Console.WriteLine("| |/ |/ / / / / (__  ) /_/ /  __/ /     / /___/ /____/ /   ");
-            Console.WriteLine("|__/|__/_/ /_/_/____/ .___/\\___/_/      \\____/_____/___/   ");
-            Console.WriteLine("                     /_/                                   \n\n");
+            Console.WriteLine(" _       ____    _                      ________    ____");
+            Console.WriteLine("| |     / / /_  (_)________  ___  _____/ ____/ /   /  _/");
+            Console.WriteLine("| | /| / / __ \\/ / ___/ __ \\/ _ \\/ ___/ /   / /    / /    ");
+            Console.WriteLine("| |/ |/ / / / / (__  ) /_/ /  __/ /  / /___/ /____/ /   ");
+            Console.WriteLine("|__/|__/_/ /_/_/____/ .___/\\___/_/   \\____/_____/___/     ");
+            Console.WriteLine("                   /_/                                  \n\n");
         }
     }
 }
