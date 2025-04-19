@@ -16,7 +16,7 @@ namespace WhisperCLI
             }
             else
             {
-                client.Connect("127.0.0.1", 8080);
+                client.Connect("whisperserver.duckdns.org", 8080);
             }
 
             WriteHeader();
