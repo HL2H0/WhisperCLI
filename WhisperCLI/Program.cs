@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Sockets;
+using System.Text.Json;
 using WhisperCLI.Models;
 namespace WhisperCLI
 {
@@ -10,9 +11,36 @@ namespace WhisperCLI
             Client client = new Client();
             User _currentUser = null;
             WriteHeader();
+            string mainServerOnline = "OFFLINE";
+            string localhostOnline = "OFFLINE";
+            try
+            {
+                TcpClient tcpClient = new TcpClient("whisperserver.duckdns.org", 8080);
+                tcpClient.Close();
+                mainServerOnline = "ONLINE";
+            }
+            catch(SocketException ex)
+            {
+            }
+            try
+            {
+                TcpClient tcpClient = new TcpClient("127.0.0.1", 8080);
+                tcpClient.Close();
+                localhostOnline = "ONLINE";
+            }
+            catch
+            {
+            }
+            if(mainServerOnline == "OFFLINE" && localhostOnline == "OFFLINE")
+            {
+                Console.WriteLine("Both servers are offline. Please check your internet connection or try again later.");
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                Environment.Exit(0);
+            }
             Console.WriteLine("Welcome to Whisper! Please select a server to connect to");
-            Console.WriteLine("1. Localhost(For debugging purposes only)");
-            Console.WriteLine("2. Main Server \n");
+            Console.WriteLine($"1. [{localhostOnline}] Localhost(For debugging purposes only)");
+            Console.WriteLine($"2. [{mainServerOnline}] Main Server \n");
             while (true)
             { 
                 Console.Write("> ");
@@ -139,7 +167,7 @@ namespace WhisperCLI
             while (true)
             {
                 Console.Write("> ");
-                string command = Console.ReadLine();
+                string command = Console.ReadLine().ToLower();
                 switch (command)
                 {
                     default:
@@ -156,17 +184,19 @@ namespace WhisperCLI
                         Console.WriteLine("Use 'help' to see available commands.");
                         break;
                     case "help":
-                        Console.WriteLine("Available commands:");
+                        Console.WriteLine("Available commands:\n");
                         Console.WriteLine("send <username> <message> - Send a message to a user.");
                         Console.WriteLine("inbox - View your inbox.");
+                        Console.WriteLine("help - Show this help message.");
+                        Console.WriteLine("clear - Clear the console.");
                         Console.WriteLine("logout - Logout from the current session.");
                         break;
                     case "logout":
                         Console.WriteLine("Logging out...");
                         client.Disconnect();
                         _currentUser = null;
-                        WriteHeader();
-                        break;
+                        Thread.Sleep(1000);
+                        return;
                     case "inbox":
                         Console.WriteLine("Your inbox:");
                         client.Send(JsonSerializer.Serialize(new Command { Type = "get_inbox", From = _currentUser.Username}));
@@ -261,6 +291,7 @@ namespace WhisperCLI
                             Console.WriteLine("No response from server.");
                         }
                     }
+
                 }
             }
         }
