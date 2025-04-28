@@ -1,4 +1,4 @@
-``` markdown 
+``` 
  _       ____    _                         ________    ____
 | |     / / /_  (_)________  ___  _____   / ____/ /   /  _/
 | | /| / / __ \/ / ___/ __ \/ _ \/ ___/  / /   / /    / /  
@@ -11,30 +11,17 @@
 > This is a work-in-progress project and is not yet complete. Please check back later for updates.
 
 ## Overview
-This a work-in-progress messaging app that uses the CLI(Command-Line-Interface)
+This is a work-in-progress messaging app that uses the CLI (Command-Line-Interface) or also known as terminal.
 
-## Commands
-|Command | Description |
-|--------|-------------|
-|`/help`| List all commands|
-|`/send`| Send a message|
-|`/inbox`| View your inbox|
-|`/clear inbox`| Clear your inbox|
-|`/clear console`| Clear the console|
-|`/changelog`| View the changelog Of this app|
-|`/logout`| Logout of a account|
-|`/exit`| Exit the app|
-
-## What's In The Works ?
+## What's In The Works?
 
 ### In-Progress
+- Security enhancements
 - Networking
 - Port Networking to WhisperCLI
-
-### Planning 
-- Discussion Mode(Send and receive messages without Accessing the inbox))
-
 
 ### Future
 - GUI Wrapper
 - SQL Database
+- Discussion Mode (Send and receive messages without Accessing the inbox)
+- End-to-End Encryption
